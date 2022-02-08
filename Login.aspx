@@ -9,14 +9,23 @@
 <body>
     <form id="form1" runat="server">
         <div>
-            Email Address&nbsp;&nbsp;&nbsp;
+        Email Address&nbsp;&nbsp;&nbsp;
         <asp:TextBox ID="tb_email" runat="server"  TextMode="Email" ></asp:TextBox>
-        <asp:Label ID="lbl_emailchecker" runat="server" Text="emailchecker"></asp:Label><br />
+
+            <br />
 
         Password&nbsp;&nbsp;&nbsp;
         <asp:TextBox ID="tb_password" runat="server"  TextMode="Password" onkeyup="javascript:validate()"></asp:TextBox>
-        <asp:Label ID="lbl_pwdchecker" runat="server" Text="pwdchecker"></asp:Label><br />
+            <br />
+            <br />
         </div>
+
+                <asp:Button ID="Button1" runat="server"  Text="Login" Width="437px" OnClick="btn_Submit_Click"  />
+
+        <p>
+        <asp:Label ID="error_msg" runat="server" Text=""></asp:Label>
+        </p>
+
     </form>
 </body>
 </html>

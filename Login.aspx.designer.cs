@@ -33,15 +33,6 @@ namespace SITConnect
         protected global::System.Web.UI.WebControls.TextBox tb_email;
 
         /// <summary>
-        /// lbl_emailchecker control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_emailchecker;
-
-        /// <summary>
         /// tb_password control.
         /// </summary>
         /// <remarks>
@@ -51,12 +42,21 @@ namespace SITConnect
         protected global::System.Web.UI.WebControls.TextBox tb_password;
 
         /// <summary>
-        /// lbl_pwdchecker control.
+        /// Button1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lbl_pwdchecker;
+        protected global::System.Web.UI.WebControls.Button Button1;
+
+        /// <summary>
+        /// error_msg control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label error_msg;
     }
 }
