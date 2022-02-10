@@ -106,27 +106,11 @@ namespace SITConnect
             {
                 using (SqlConnection con = new SqlConnection(MYDBConnectionString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Users VALUES(@FirstName,@LastName,@CreditCardInfo,@Email,@PwdHash,@PwdSalt,@DOB,@Photo,@EmailVerified) "))
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Users VALUES(@FirstName,@LastName,@CreditCardInfo,@Email,@PwdHash,@PwdSalt,@DOB,@Photo,@Key,@IV) "))
                     {
                         using (SqlDataAdapter sda = new SqlDataAdapter())
                         {
-                            string sql = "select Email FROM Account WHERE Email=@EMAIL";
-                            SqlCommand command = new SqlCommand(sql, con);
-                            command.Parameters.AddWithValue("@EMAIL", tb_email);
 
-                            using (SqlDataReader reader = command.ExecuteReader())
-                            {
-                                while (reader.Read())
-                                {
-                                    if (reader["Email"] != null)
-                                    {
-                                        lbl_emailchecker.Text = "This email has already been registered!";
-                                        lbl_emailchecker.ForeColor = Color.Red;
-                                        return;
-                                    }
-                                       
-                                }
-                            }
 
                             cmd.CommandType = CommandType.Text;
                             cmd.Parameters.AddWithValue("@Email", tb_email.Text.Trim());
@@ -144,10 +128,13 @@ namespace SITConnect
                             }
                             else
                             {
-                                lbl_photo.Text = "No Images Uploaded.";
-                                return;
+                                SqlParameter imageParameter = new SqlParameter("@Photo", SqlDbType.Image);
+                                imageParameter.Value = DBNull.Value;
+                                cmd.Parameters.Add(imageParameter);
                             }
-                            cmd.Parameters.AddWithValue("@EmailVerified", DBNull.Value);
+                            cmd.Parameters.AddWithValue("@IV", Convert.ToBase64String(IV));
+                            cmd.Parameters.AddWithValue("@Key", Convert.ToBase64String(Key));
+
                             cmd.Connection = con;
                             con.Open();
                             cmd.ExecuteNonQuery();
