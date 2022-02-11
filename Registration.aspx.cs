@@ -106,7 +106,7 @@ namespace SITConnect
             {
                 using (SqlConnection con = new SqlConnection(MYDBConnectionString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Users VALUES(@FirstName,@LastName,@CreditCardInfo,@Email,@PwdHash,@PwdSalt,@DOB,@Photo,@Key,@IV) "))
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Users VALUES(@FirstName,@LastName,@CreditCardInfo,@Email,@PwdHash,@PwdSalt,@DOB,@Photo,@Key,@IV,@FailedAttempts,@Locked,@LockedDateTime) "))
                     {
                         using (SqlDataAdapter sda = new SqlDataAdapter())
                         {
@@ -135,10 +135,13 @@ namespace SITConnect
                             cmd.Parameters.AddWithValue("@IV", Convert.ToBase64String(IV));
                             cmd.Parameters.AddWithValue("@Key", Convert.ToBase64String(Key));
 
+                            cmd.Parameters.AddWithValue("@FailedAttempts", DBNull.Value);
+                            cmd.Parameters.AddWithValue("@Locked", DBNull.Value);
+                            cmd.Parameters.AddWithValue("@LockedDateTime", DBNull.Value);
                             cmd.Connection = con;
                             con.Open();
                             cmd.ExecuteNonQuery();
-                            con.Close();
+                            con.Close(); 
                         }
                     }
                 }
@@ -152,6 +155,7 @@ namespace SITConnect
 
         protected void btn_Submit_Click(object sender, EventArgs e)
         {
+            //Email
             SqlConnection connection = new SqlConnection(MYDBConnectionString);
             string sql = "select Email FROM Users WHERE Email=@EMAIL";
             SqlCommand command = new SqlCommand(sql, connection);
@@ -181,25 +185,30 @@ namespace SITConnect
 
             string pwd = tb_password.Text.ToString().Trim();
             int pwdScore = checkPassword(pwd);
+            bool checkFields = checkInputFields();
             btn_checkPassword_Click(pwdScore);
-            if (pwdScore > 4)
+            if (checkFields)
             {
-                //Generate random "salt"
-                RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
-                byte[] saltByte = new byte[8];
-                //Fills array of bytes with a cryptographically strong sequence of random values.
-                rng.GetBytes(saltByte);
-                salt = Convert.ToBase64String(saltByte);
-                SHA512Managed hashing = new SHA512Managed();
-                string pwdWithSalt = pwd + salt;
-                byte[] plainHash = hashing.ComputeHash(Encoding.UTF8.GetBytes(pwd));
-                byte[] hashWithSalt = hashing.ComputeHash(Encoding.UTF8.GetBytes(pwdWithSalt));
-                finalHash = Convert.ToBase64String(hashWithSalt);
-                RijndaelManaged cipher = new RijndaelManaged();
-                cipher.GenerateKey();
-                Key = cipher.Key;
-                IV = cipher.IV;
-                createAccount();
+                if (pwdScore > 4)
+                {
+                    //Generate random "salt"
+                    RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+                    byte[] saltByte = new byte[8];
+                    //Fills array of bytes with a cryptographically strong sequence of random values.
+                    rng.GetBytes(saltByte);
+                    salt = Convert.ToBase64String(saltByte);
+                    SHA512Managed hashing = new SHA512Managed();
+                    string pwdWithSalt = pwd + salt;
+                    byte[] plainHash = hashing.ComputeHash(Encoding.UTF8.GetBytes(pwd));
+                    byte[] hashWithSalt = hashing.ComputeHash(Encoding.UTF8.GetBytes(pwdWithSalt));
+                    finalHash = Convert.ToBase64String(hashWithSalt);
+                    RijndaelManaged cipher = new RijndaelManaged();
+                    cipher.GenerateKey();
+                    Key = cipher.Key;
+                    IV = cipher.IV;
+                    createAccount();
+                    Response.Redirect("Login.aspx", false);
+                }
             }
         }
 
@@ -225,9 +234,43 @@ namespace SITConnect
             return cipherText;
         }
 
+        
+        protected bool checkInputFields()
+        {
+            if (tb_fname.Text == null)
+            {
+                return false;
+            }
+            if (tb_lname.Text == null)
+            {
+                return false;
+            }
+            if (tb_cardInfo.Text == null)
+            {
+                return false;
+            }
+            if (!Regex.IsMatch(tb_cardInfo.Text, "^4[0-9]{12}(?:[0-9]{3})?$"))
+            {
+                return false;
+            }
+            if (tb_email.Text == null)
+            {
+                return false;
+            }
+            if (!Regex.IsMatch(tb_email.Text, @"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*"))
+            {
+                return false;
 
+            }
+            if (tb_dob.Text == null)
+            {
+                return false;
+            }
+            return true;
+        }
 
     }
+
 
     
 

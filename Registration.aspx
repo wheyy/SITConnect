@@ -50,24 +50,43 @@
         <br /><br />
 
         First Name&nbsp;&nbsp;&nbsp;
-        <asp:TextBox ID="tb_fname" runat="server"  TextMode="SingleLine" ></asp:TextBox> <br />
+        <asp:TextBox ID="tb_fname" runat="server"  TextMode="SingleLine" ></asp:TextBox> 
+        <asp:RequiredFieldValidator ID="RequiredFieldValidator2" ControlToValidate="tb_fname" runat="server" ErrorMessage="Please enter your first name" Style="color: red"></asp:RequiredFieldValidator>
+
+        <br />
 
         Last Name&nbsp;&nbsp;&nbsp;
-        <asp:TextBox ID="tb_lname" runat="server"  TextMode="SingleLine" ></asp:TextBox><br />
+        <asp:TextBox ID="tb_lname" runat="server"  TextMode="SingleLine" ></asp:TextBox>
+        <asp:RequiredFieldValidator ID="RequiredFieldValidator1" ControlToValidate="tb_lname" runat="server" ErrorMessage="Please enter your last name" Style="color: red"></asp:RequiredFieldValidator>
+
+
+        <br />
+
 
         Credit Card Info&nbsp;&nbsp;&nbsp;
-        <asp:TextBox ID="tb_cardInfo" runat="server"  TextMode="SingleLine" ></asp:TextBox><br />
+        <asp:TextBox ID="tb_cardInfo" runat="server"  TextMode="SingleLine" ></asp:TextBox>
+        <asp:RequiredFieldValidator ID="RequiredFieldValidator3" ControlToValidate="tb_cardInfo" runat="server" ErrorMessage="Please enter your credit card information" Style="color: red"></asp:RequiredFieldValidator>
+        <asp:RegularExpressionValidator ID="regCard" ControlToValidate="tb_cardInfo" Text="Sorry, we only accept VISA card numbers (without spaces)" ValidationExpression="^4[0-9]{12}(?:[0-9]{3})?$" runat="server" Style="color: red" />
+
+        
+
+        <br />
 
         Email Address&nbsp;&nbsp;&nbsp;
         <asp:TextBox ID="tb_email" runat="server"  TextMode="Email" ></asp:TextBox>
-        <asp:Label ID="lbl_emailchecker" runat="server" Text=""></asp:Label><br />
+        <asp:Label ID="lbl_emailchecker" runat="server" Text=""></asp:Label>
+        <asp:RequiredFieldValidator ID="RequiredFieldValidator5" ControlToValidate="tb_email" runat="server" ErrorMessage="Please enter your Email" Style="color: red"></asp:RequiredFieldValidator>
+        <br />
 
         Password&nbsp;&nbsp;&nbsp;
         <asp:TextBox ID="tb_password" runat="server"  TextMode="Password" onkeyup="javascript:validate()"></asp:TextBox>
         <asp:Label ID="lbl_pwdchecker" runat="server" Text="pwdchecker"></asp:Label><br />
 
         Date of Birth&nbsp;&nbsp;&nbsp;
-        <asp:TextBox ID="tb_dob" runat="server"  TextMode="Date" ></asp:TextBox><br />
+        <asp:TextBox ID="tb_dob" runat="server"  TextMode="Date" ></asp:TextBox>
+        <asp:RequiredFieldValidator ID="RequiredFieldValidator4" ControlToValidate="tb_dob" runat="server" ErrorMessage="Please enter your Date of birth" Style="color: red"></asp:RequiredFieldValidator>
+
+        <br />
 
         Photo&nbsp;&nbsp;&nbsp;
         <asp:FileUpload ID="fu_photo" runat="server" ></asp:FileUpload><br />
