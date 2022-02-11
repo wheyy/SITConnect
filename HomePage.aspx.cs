@@ -26,7 +26,7 @@ namespace SITConnect
                 {
                     email = (string)Session["LoggedIn"];
                     string s = getName(email);
-                    lblMessage.Text = "Hi "+ s;
+                    lblMessage.Text = "Hi "+ HttpUtility.HtmlEncode(s);
                     lblMessage.ForeColor = System.Drawing.Color.Green;
                     btnLogout.Visible = true;
                     btnGeneric.Visible = true;
