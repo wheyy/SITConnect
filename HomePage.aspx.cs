@@ -24,11 +24,11 @@ namespace SITConnect
             {
                 if (Session["AuthToken"].ToString().Equals(Request.Cookies["AuthToken"].Value))
                 {
-                    lblMessage.Text = "Congratulations!, you are logged in.";
+                    email = (string)Session["LoggedIn"];
+                    lblMessage.Text = "Welcome!, you are logged in as: " + email;
                     lblMessage.ForeColor = System.Drawing.Color.Green;
                     btnLogout.Visible = true;
                     btnGeneric.Visible = true;
-                    email = (string)Session["LoggedIn"];
                     System.Diagnostics.Debug.WriteLine("This is the email i got: " + email);
                 }
                 else
