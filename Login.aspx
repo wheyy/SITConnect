@@ -27,7 +27,7 @@
         
         <asp:Button  ID="Button1" runat="server"  Text="Login" Width="437px" OnClick="btn_Submit_Click"  />
 
-
+        <a href="/ChangePw.aspx"><p>Forgot Password</p></a>
         <input type="hidden" id="g-recaptcha-response" name="g-recaptcha-response"/>
 
         <p>

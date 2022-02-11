@@ -15,7 +15,7 @@
         <asp:Label ID="lblMessage" runat="server" EnableViewState="false" />
        <br />
         <br />
-        <a href="/duadsbuwbuiwbad"><p>404</p></a>
+        <a href="/duadsbuwbuiwbad.aspx"><p>404</p></a>
        <br />
         <br />
         <asp:Button ID="btnGeneric" runat="server" Text="GenericError" OnClick="InVokeGenericError" Visible="false" />

@@ -92,6 +92,7 @@
     <Content Include="App_Data\SITConnectDB_log.ldf">
       <DependentUpon>SITConnectDB.mdf</DependentUpon>
     </Content>
+    <Content Include="ChangePw.aspx" />
     <Content Include="CustomError\GenericError.html" />
     <Content Include="CustomError\HTTP404.html" />
     <Content Include="CustomError\HTTP500.html" />
@@ -101,6 +102,13 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangePw.aspx.cs">
+      <DependentUpon>ChangePw.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ChangePw.aspx.designer.cs">
+      <DependentUpon>ChangePw.aspx</DependentUpon>
+    </Compile>
     <Compile Include="HomePage.aspx.cs">
       <DependentUpon>HomePage.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
