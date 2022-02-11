@@ -13,6 +13,12 @@
         <legend>HomePage</legend>
         <br />
         <asp:Label ID="lblMessage" runat="server" EnableViewState="false" />
+       <br />
+        <br />
+        <a href="/duadsbuwbuiwbad"><p>daddasdsadsad</p></a>
+       <br />
+        <br />
+        <asp:Button ID="btnGeneric" runat="server" Text="GenericError" OnClick="InVokeGenericError" Visible="false" />
         <br />
         <br />
         <asp:Button ID="btnLogout" runat="server" Text="Logout" OnClick="Logout" Visible="false" />

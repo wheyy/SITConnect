@@ -27,6 +27,7 @@ namespace SITConnect
                     lblMessage.Text = "Congratulations!, you are logged in.";
                     lblMessage.ForeColor = System.Drawing.Color.Green;
                     btnLogout.Visible = true;
+                    btnGeneric.Visible = true;
                     email = (string)Session["LoggedIn"];
                     System.Diagnostics.Debug.WriteLine("This is the email i got: " + email);
                 }
@@ -64,6 +65,32 @@ namespace SITConnect
             
             setAuditLog("Log out", email);
         }
+
+        protected void InVokeGenericError(object sender, EventArgs e)
+        {
+            using (SqlConnection con = new SqlConnection(MYDBConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO AuditLog VALUES(@Email,@Action,@AuditDateTime) "))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter())
+                    {
+
+                        string email0 = null;
+                        string auditAction0 = null;
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@Email", email0);
+                        cmd.Parameters.AddWithValue("@Action", auditAction0);
+                        cmd.Parameters.AddWithValue("@AuditDateTime", DateTime.Now);
+
+                        cmd.Connection = con;
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                        con.Close();
+                    }
+                }
+            }
+        }
+        
 
         void setAuditLog(string auditAction, string email0)
         {

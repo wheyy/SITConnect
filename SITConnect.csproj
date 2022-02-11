@@ -92,6 +92,9 @@
     <Content Include="App_Data\SITConnectDB_log.ldf">
       <DependentUpon>SITConnectDB.mdf</DependentUpon>
     </Content>
+    <Content Include="CustomError\GenericError.html" />
+    <Content Include="CustomError\HTTP404.html" />
+    <Content Include="CustomError\HTTP500.html" />
     <Content Include="HomePage.aspx" />
     <Content Include="Login.aspx" />
     <Content Include="Registration.aspx" />

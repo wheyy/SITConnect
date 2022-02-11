@@ -66,8 +66,8 @@ namespace SITConnect
                                         System.Diagnostics.Debug.WriteLine(accLockOutTimeSpan.Minutes);
                                         if (accLockOutTimeSpan.Minutes >= 1)
                                         {
-                                            changeLocked(false);
-                                            changeFailedAttempts(0);
+                                            changeLocked(false, email);
+                                            changeFailedAttempts(0,email);
                                             accIsLocked = false;
                                         } else
                                         {
@@ -98,7 +98,7 @@ namespace SITConnect
 
                             if (userHash.Equals(dbHash))
                             {
-                                changeFailedAttempts(0);
+                                changeFailedAttempts(0,email);
                                 setAuditLog("Log in", email);
 
                                 Session["LoggedIn"] = email;
@@ -120,13 +120,13 @@ namespace SITConnect
                                 {
                                     error_msg.Text = $"Your account will be locked out for 1min";
                                     error_msg.ForeColor = System.Drawing.Color.Red;
-                                    changeLocked(true);
+                                    changeLocked(true, email);
                                     return;
 
                                 }
                                 else if(noOfFailedAttempts < 3)
                                 {
-                                    changeFailedAttempts(noOfFailedAttempts);
+                                    changeFailedAttempts(noOfFailedAttempts,email);
                                     error_msg.Text = $"Email or password is not valid. Please try again. You have {3 - noOfFailedAttempts} attempts left before your account locks out";
                                     error_msg.ForeColor = System.Drawing.Color.Red;
                                     return;
@@ -251,16 +251,18 @@ namespace SITConnect
             }
         } 
         
-        void changeLocked(bool boolean)
+        void changeLocked(bool boolean, string email)
         {
 
             if (boolean)
             {
                 SqlConnection con = new SqlConnection(MYDBConnectionString);
                 string format = "MM/dd/yyy HH:mm:ss";
-                string sql = "Update Users set Locked=1, LockedDateTime='" + DateTime.Now.ToString(format) + "' WHERE EMAIL = '" + tb_email.Text.ToString().Trim() + "'";
-                changeFailedAttempts(3);
+                string sql = "Update Users set Locked=1, LockedDateTime='" + DateTime.Now.ToString(format) + "' WHERE EMAIL = @EMAIL";
+                changeFailedAttempts(3,email);
                 SqlCommand cmd = new SqlCommand(sql, con);
+                cmd.Parameters.AddWithValue("@EMAIL", email);
+
                 cmd.Connection = con;
                 con.Open();
                 cmd.ExecuteNonQuery();
@@ -269,9 +271,11 @@ namespace SITConnect
             {
                 SqlConnection con = new SqlConnection(MYDBConnectionString);
                 string format = "MM/dd/yyy HH:mm:ss";
-                string sql = "Update Users set Locked=0, Lockeddatetime=null WHERE EMAIL = '" + tb_email.Text.ToString().Trim() + "'";
-                changeFailedAttempts(0);
+                string sql = "Update Users set Locked=0, Lockeddatetime=null WHERE EMAIL = @EMAIL";
+                changeFailedAttempts(0,email);
                 SqlCommand cmd = new SqlCommand(sql, con);
+                cmd.Parameters.AddWithValue("@EMAIL", email);
+
                 cmd.Connection = con;
                 con.Open();
                 cmd.ExecuteNonQuery();
@@ -281,13 +285,14 @@ namespace SITConnect
 
      
 
-        void changeFailedAttempts(int i)
+        void changeFailedAttempts(int i, string email)
         {
 
             SqlConnection con = new SqlConnection(MYDBConnectionString);
             string format = "MM/dd/yyy HH:mm:ss";
-            string sql = "Update Users set FailedAttempts='" + i + "' WHERE EMAIL = '" + tb_email.Text.ToString().Trim() + "'";
+            string sql = "Update Users set FailedAttempts='" + i + "' WHERE EMAIL = @EMAIL";
             SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@EMAIL", email);
             cmd.Connection = con;
             con.Open();
             cmd.ExecuteNonQuery();
