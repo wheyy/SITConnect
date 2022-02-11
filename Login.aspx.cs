@@ -33,6 +33,7 @@ namespace SITConnect
             if (ValidateCaptcha())
             {
                 System.Diagnostics.Debug.WriteLine("ValidateCaptcha = true");
+
                 string pwd = tb_password.Text.ToString().Trim();
                 string email = tb_email.Text.ToString().Trim();
                 SHA512Managed hashing = new SHA512Managed();
@@ -98,6 +99,8 @@ namespace SITConnect
                             if (userHash.Equals(dbHash))
                             {
                                 changeFailedAttempts(0);
+                                setAuditLog("Log in", email);
+
                                 Session["LoggedIn"] = email;
 
                                 // createa a new GUID and save into the session
@@ -116,6 +119,7 @@ namespace SITConnect
                                 if (noOfFailedAttempts == 3)
                                 {
                                     error_msg.Text = $"Your account will be locked out for 1min";
+                                    error_msg.ForeColor = System.Drawing.Color.Red;
                                     changeLocked(true);
                                     return;
 
@@ -124,6 +128,7 @@ namespace SITConnect
                                 {
                                     changeFailedAttempts(noOfFailedAttempts);
                                     error_msg.Text = $"Email or password is not valid. Please try again. You have {3 - noOfFailedAttempts} attempts left before your account locks out";
+                                    error_msg.ForeColor = System.Drawing.Color.Red;
                                     return;
                                 }
                                 Response.Redirect("Login.aspx", false);
@@ -142,6 +147,7 @@ namespace SITConnect
                 else
                 {
                     error_msg.Text = $"Your account will be locked out for another {60 - Convert.ToInt16(accLockOutTimeSpan.Seconds)}seconds";
+                    error_msg.ForeColor = System.Drawing.Color.Red;
                 }
             }
         }
@@ -317,6 +323,30 @@ namespace SITConnect
 
             return 0;
 
+        }
+
+        void setAuditLog(string auditAction, string email)
+        {
+            using (SqlConnection con = new SqlConnection(MYDBConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO AuditLog VALUES(@Email,@Action,@AuditDateTime) "))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter())
+                    {
+
+
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@Email", email);
+                        cmd.Parameters.AddWithValue("@Action", auditAction);
+                        cmd.Parameters.AddWithValue("@AuditDateTime", DateTime.Now);
+
+                        cmd.Connection = con;
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                        con.Close();
+                    }
+                }
+            }
         }
 
     }

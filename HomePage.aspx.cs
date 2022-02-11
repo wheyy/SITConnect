@@ -4,11 +4,20 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Security.Cryptography;
+using System.Text;
+using System.Data;
+using System.Data.SqlClient;
+using System.Net;
+using System.IO;
+using System.Web.Script.Serialization;
 
 namespace SITConnect
 {
     public partial class HomePage : System.Web.UI.Page
     {
+        string MYDBConnectionString = System.Configuration.ConfigurationManager.ConnectionStrings["MYDBConnection"].ConnectionString;
+        string email;
         protected void Page_Load(object sender, EventArgs e)
         {
             if (Session["LoggedIn"] != null && Session["AuthToken"] != null && Request.Cookies["AuthToken"] != null)
@@ -17,7 +26,9 @@ namespace SITConnect
                 {
                     lblMessage.Text = "Congratulations!, you are logged in.";
                     lblMessage.ForeColor = System.Drawing.Color.Green;
-                    btnLogout.Visible = true; 
+                    btnLogout.Visible = true;
+                    email = (string)Session["LoggedIn"];
+                    System.Diagnostics.Debug.WriteLine("This is the email i got: " + email);
                 }
                 else
                 {
@@ -49,7 +60,33 @@ namespace SITConnect
                 Response.Cookies["AuthToken"].Value = string.Empty;
                 Response.Cookies["AuthToken"].Expires = DateTime.Now.AddMonths(-20);
             }
+
             
+            setAuditLog("Log out", email);
+        }
+
+        void setAuditLog(string auditAction, string email0)
+        {
+            using (SqlConnection con = new SqlConnection(MYDBConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO AuditLog VALUES(@Email,@Action,@AuditDateTime) "))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter())
+                    {
+
+
+                        cmd.CommandType = CommandType.Text;
+                        cmd.Parameters.AddWithValue("@Email", email0);
+                        cmd.Parameters.AddWithValue("@Action", auditAction);
+                        cmd.Parameters.AddWithValue("@AuditDateTime", DateTime.Now);
+
+                        cmd.Connection = con;
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                        con.Close();
+                    }
+                }
+            }
         }
     }
 }
