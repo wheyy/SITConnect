@@ -22,6 +22,7 @@ namespace SITConnect
         byte[] Key;
         byte[] IV;
         public string success { get; set; }
+        int noOfFailedAttempts;
         protected void Page_Load(object sender, EventArgs e)
         {
 
@@ -37,40 +38,111 @@ namespace SITConnect
                 SHA512Managed hashing = new SHA512Managed();
                 string dbHash = getDBHash(email);
                 string dbSalt = getDBSalt(email);
+
+                Boolean accIsLocked = false;
+                TimeSpan accLockOutTimeSpan = TimeSpan.Zero;
+                SqlConnection connection = new SqlConnection(MYDBConnectionString);
+                string sql = "select LockedDateTime,Locked FROM Users WHERE Email=@EMAIL";
+                SqlCommand command = new SqlCommand(sql, connection);
+                command.Parameters.AddWithValue("@EMAIL", email);
                 try
                 {
-                    if (dbSalt != null && dbSalt.Length > 0 && dbHash != null && dbHash.Length > 0)
+                    System.Diagnostics.Debug.WriteLine("Hi i entered the try loop for reader");
+                    connection.Open();
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        string pwdWithSalt = pwd + dbSalt;
-                        byte[] hashWithSalt = hashing.ComputeHash(Encoding.UTF8.GetBytes(pwdWithSalt));
-                        string userHash = Convert.ToBase64String(hashWithSalt);
-
-
-                        if (userHash.Equals(dbHash))
+                        while (reader.Read())
                         {
-                            Session["LoggedIn"] = email;
+                            if (reader["Locked"] != DBNull.Value)
+                            {
+                                System.Diagnostics.Debug.WriteLine(reader["Locked"].ToString());
+                                if (Convert.ToBoolean(reader["Locked"].ToString()))
+                                {
+                                    accIsLocked = true;
+                                    if (reader["LockedDateTime"] != DBNull.Value)
+                                    {
+                                        accLockOutTimeSpan = Convert.ToDateTime(DateTime.Now.ToString("dd/MM/yyy HH:mm:ss")).Subtract(Convert.ToDateTime(reader["LockedDateTime"].ToString()));
+                                        System.Diagnostics.Debug.WriteLine(accLockOutTimeSpan.Minutes);
+                                        if (accLockOutTimeSpan.Minutes >= 1)
+                                        {
+                                            changeLocked(false);
+                                            changeFailedAttempts(0);
+                                            accIsLocked = false;
+                                        } else
+                                        {
+                                            accIsLocked = true;
+                                        }
 
-                            // createa a new GUID and save into the session
-                            string guid = Guid.NewGuid().ToString();
-                            Session["AuthToken"] = guid;
-                            // now create a new cookie with this guid value
-                            Response.Cookies.Add(new HttpCookie("AuthToken", guid));
-
-                            Response.Redirect("HomePage.aspx", false);
-                        }
-                        else
-                        {
-                            error_msg.Text = "Userid or password is not valid. Please try again.";
-                            Response.Redirect("Login.aspx", false);
+                                    }
+                                }
+                            }
                         }
                     }
-
                 }
                 catch (Exception ex)
                 {
                     throw new Exception(ex.ToString());
                 }
-                finally { }
+                finally { connection.Close(); }
+                if (!accIsLocked)
+                {
+                    try
+                    {
+                        if (dbSalt != null && dbSalt.Length > 0 && dbHash != null && dbHash.Length > 0)
+                        {
+                            string pwdWithSalt = pwd + dbSalt;
+                            byte[] hashWithSalt = hashing.ComputeHash(Encoding.UTF8.GetBytes(pwdWithSalt));
+                            string userHash = Convert.ToBase64String(hashWithSalt);
+
+
+                            if (userHash.Equals(dbHash))
+                            {
+                                changeFailedAttempts(0);
+                                Session["LoggedIn"] = email;
+
+                                // createa a new GUID and save into the session
+                                string guid = Guid.NewGuid().ToString();
+                                Session["AuthToken"] = guid;
+                                // now create a new cookie with this guid value
+                                Response.Cookies.Add(new HttpCookie("AuthToken", guid));
+
+                                Response.Redirect("HomePage.aspx", false);
+                            }
+                            else
+                            {
+                                noOfFailedAttempts = checkFailedAttempts(email) + 1;
+
+
+                                if (noOfFailedAttempts == 3)
+                                {
+                                    error_msg.Text = $"Your account will be locked out for 1min";
+                                    changeLocked(true);
+                                    return;
+
+                                }
+                                else if(noOfFailedAttempts < 3)
+                                {
+                                    changeFailedAttempts(noOfFailedAttempts);
+                                    error_msg.Text = $"Email or password is not valid. Please try again. You have {3 - noOfFailedAttempts} attempts left before your account locks out";
+                                    return;
+                                }
+                                Response.Redirect("Login.aspx", false);
+
+
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.ToString());
+                    }
+                    finally { }
+                }
+                else
+                {
+                    error_msg.Text = $"Your account will be locked out for another {60 - Convert.ToInt16(accLockOutTimeSpan.Seconds)}seconds";
+                }
             }
         }
 
@@ -171,6 +243,81 @@ namespace SITConnect
             {
                 throw ex;
             }
-        }   
+        } 
+        
+        void changeLocked(bool boolean)
+        {
+
+            if (boolean)
+            {
+                SqlConnection con = new SqlConnection(MYDBConnectionString);
+                string format = "MM/dd/yyy HH:mm:ss";
+                string sql = "Update Users set Locked=1, LockedDateTime='" + DateTime.Now.ToString(format) + "' WHERE EMAIL = '" + tb_email.Text.ToString().Trim() + "'";
+                changeFailedAttempts(3);
+                SqlCommand cmd = new SqlCommand(sql, con);
+                cmd.Connection = con;
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+            } else
+            {
+                SqlConnection con = new SqlConnection(MYDBConnectionString);
+                string format = "MM/dd/yyy HH:mm:ss";
+                string sql = "Update Users set Locked=0, Lockeddatetime=null WHERE EMAIL = '" + tb_email.Text.ToString().Trim() + "'";
+                changeFailedAttempts(0);
+                SqlCommand cmd = new SqlCommand(sql, con);
+                cmd.Connection = con;
+                con.Open();
+                cmd.ExecuteNonQuery();
+                con.Close();
+            }
+        }
+
+     
+
+        void changeFailedAttempts(int i)
+        {
+
+            SqlConnection con = new SqlConnection(MYDBConnectionString);
+            string format = "MM/dd/yyy HH:mm:ss";
+            string sql = "Update Users set FailedAttempts='" + i + "' WHERE EMAIL = '" + tb_email.Text.ToString().Trim() + "'";
+            SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Connection = con;
+            con.Open();
+            cmd.ExecuteNonQuery();
+            con.Close();
+
+                    
+        }
+
+        public int checkFailedAttempts(string email)
+        {
+            int i = 0;
+            SqlConnection connection = new SqlConnection(MYDBConnectionString);
+            string sql = "select FailedAttempts FROM Users WHERE Email=@EMAIL";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@EMAIL", email);
+
+            connection.Open();
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    if (reader["FailedAttempts"] != null)
+                    {
+                        if (reader["FailedAttempts"] != DBNull.Value)
+                        {
+                            i = Convert.ToInt32(reader["FailedAttempts"].ToString());
+                            return i;
+                        }
+                    }
+                }
+
+            }
+
+            return 0;
+
+        }
+
     }
 }
