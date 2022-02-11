@@ -25,7 +25,8 @@ namespace SITConnect
                 if (Session["AuthToken"].ToString().Equals(Request.Cookies["AuthToken"].Value))
                 {
                     email = (string)Session["LoggedIn"];
-                    lblMessage.Text = "Welcome!, you are logged in as: " + email;
+                    string s = getName(email);
+                    lblMessage.Text = "Hi "+ s;
                     lblMessage.ForeColor = System.Drawing.Color.Green;
                     btnLogout.Visible = true;
                     btnGeneric.Visible = true;
@@ -115,5 +116,39 @@ namespace SITConnect
                 }
             }
         }
+
+        public string getName(string email)
+        {
+            string s = "";
+            SqlConnection connection = new SqlConnection(MYDBConnectionString);
+            string sql = "select FirstName,LastName FROM Users WHERE Email=@EMAIL";
+            SqlCommand command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@EMAIL", email);
+
+            connection.Open();
+            using (SqlDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                
+                    if (reader["FirstName"] != DBNull.Value)
+                    {
+                        s = reader["FirstName"].ToString() + " ";
+  
+                    }
+                    if (reader["LastName"] != DBNull.Value)
+                    {
+                        s += reader["LastName"].ToString();
+                    }
+
+
+                }
+
+            }
+
+            return s;
+
+        }
+
     }
 }
